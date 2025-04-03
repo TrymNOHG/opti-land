@@ -17,10 +17,8 @@ pub struct Config {
     // File
     pub file_name: String,
     pub ind: String,
-    pub fitness_name_1: String,
-    pub mimizie_fitness_name_1: bool,
-    pub fitness_name_2: String,
-    pub mimizie_fitness_name_2: bool,
+    pub fitness_name: String,
+    pub mimizie_fitness_name: bool,
     // Hyperparameters
     pub population_size: usize,
     pub n_generations: i32,
