@@ -1,0 +1,17 @@
+# Max run time in seconds. -1 for no constraint
+run_time: 180
+
+# Logging
+log_frequency: 100
+
+# File
+file_name: ../lookup_tables/10-hepatitis.csv
+ind: ind
+fitness_name: err
+mimizie_fitness_name: True
+
+# Hyperparameters
+population_size: 150
+n_generations: 30000
+tournament_size: 3
+
