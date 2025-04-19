@@ -40,7 +40,7 @@ pub fn start(config: &Config) {
             }
             n_individuals += 1;
             println!(
-                "generation: {}, fitness_ml: {}, fitness: {}, genome: {}",
+                "generation: {}, fitness_ml: {}, fitness: {}, genome: {:b}",
                 generation,
                 individual.fitness_ml_metric,
                 individual.fitness_length,

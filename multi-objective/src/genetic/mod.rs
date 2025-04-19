@@ -7,4 +7,5 @@ pub mod individual;
 pub mod initialize_population;
 pub mod mutation;
 pub mod non_dominated_sort;
+pub mod save;
 pub mod selection;

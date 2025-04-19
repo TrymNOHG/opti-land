@@ -12,18 +12,6 @@ pub struct Individual {
 }
 
 impl Individual {
-    pub fn new() -> Self {
-        Individual {
-            gene: 0,
-            fitness_length: 0,
-            fitness_ml_metric: 0.0,
-            dominating_idx: Vec::new(),
-            n: 0,
-            rank: 0,
-            crodwing_distance: 0.0,
-        }
-    }
-
     pub fn from(gene: u32) -> Self {
         Individual {
             gene,
