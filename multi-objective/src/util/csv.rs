@@ -23,11 +23,15 @@ pub fn read_csv<P: AsRef<Path>>(
 
     let mut bit_length = 0;
 
+    let mut i = 0;
     for result in rdr.records() {
         let record: StringRecord = result?;
-        bit_length = record.get(ind_idx).iter().len();
-        table.push(record.get(fitness_idx).unwrap().parse().unwrap())
+        bit_length = record.get(ind_idx).unwrap().len();
+        table.push(record.get(fitness_idx).unwrap().parse().unwrap());
+        i += 1;
     }
+
+    println!("Len of record: {}", i);
 
     Ok((bit_length, table))
 }

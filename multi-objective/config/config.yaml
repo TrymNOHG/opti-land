@@ -12,6 +12,6 @@ mimizie_fitness_name: True
 
 # Hyperparameters
 population_size: 150
-n_generations: 30000
+n_generations: 20
 tournament_size: 3
 

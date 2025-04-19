@@ -1,5 +1,10 @@
 pub mod algorithm;
+pub mod crossover;
+pub mod crowding_distance;
+pub mod darwin;
 pub mod fitness;
 pub mod individual;
 pub mod initialize_population;
+pub mod mutation;
 pub mod non_dominated_sort;
+pub mod selection;
