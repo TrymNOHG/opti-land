@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::path::Path;
@@ -9,8 +10,8 @@ use super::config::Config;
 pub fn read_csv<P: AsRef<Path>>(
     filename: P,
     config: &Config,
-) -> Result<(usize, Vec<f32>), Box<dyn Error>> {
-    let mut table = Vec::new();
+) -> Result<(usize, HashMap<u32, f32>), Box<dyn Error>> {
+    let mut table = HashMap::new();
     let file = File::open(filename)?;
     let mut rdr = csv::Reader::from_reader(file);
     let headers = rdr.headers()?.clone();
@@ -26,8 +27,12 @@ pub fn read_csv<P: AsRef<Path>>(
     let mut i = 0;
     for result in rdr.records() {
         let record: StringRecord = result?;
-        bit_length = record.get(ind_idx).unwrap().len();
-        table.push(record.get(fitness_idx).unwrap().parse().unwrap());
+        let bit = record.get(ind_idx).unwrap();
+        bit_length = bit.len();
+        println!("Bit string: {}", &bit);
+        let bit: u32 = u32::from_str_radix(bit, 2).unwrap();
+        let fitness = record.get(fitness_idx).unwrap().parse().unwrap();
+        table.insert(bit, fitness);
         i += 1;
     }
 

@@ -40,5 +40,8 @@ impl Individual {
     pub fn flip(&mut self, idx: usize) {
         let mask = 0 << idx;
         self.gene = self.gene ^ mask;
+        if self.gene.count_ones() == 0 {
+            self.gene = self.gene ^ mask;
+        }
     }
 }

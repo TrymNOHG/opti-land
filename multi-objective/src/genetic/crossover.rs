@@ -28,8 +28,16 @@ pub fn crossover(parents: &mut Vec<Individual>, n_bits: usize) -> Vec<Individual
         let child1_gene = (p1 & high_mask) | (p2 & low_mask);
         let child2_gene = (p2 & high_mask) | (p1 & low_mask);
 
-        children.push(Individual::from(child1_gene));
-        children.push(Individual::from(child2_gene));
+        if child1_gene.count_ones() != 0 {
+            children.push(Individual::from(child1_gene));
+        } else {
+            children.push(Individual::from(p1));
+        }
+        if child2_gene.count_ones() != 0 {
+            children.push(Individual::from(child2_gene));
+        } else {
+            children.push(Individual::from(p2));
+        }
     }
     children
 }

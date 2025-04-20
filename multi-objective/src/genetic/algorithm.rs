@@ -8,6 +8,7 @@ use super::darwin::destroy;
 use super::fitness::fitness_population;
 use super::initialize_population::init;
 use super::non_dominated_sort::fast_non_dominated_sort;
+use super::save::save_fitness;
 
 pub fn start(config: &Config) {
     let (bit_length, table) = read_csv(&config.file_name, config).unwrap();
@@ -50,4 +51,5 @@ pub fn start(config: &Config) {
         println!("Number of individuals in first front: {}", n_individuals);
         generation += 1;
     }
+    let _ = save_fitness(population);
 }
