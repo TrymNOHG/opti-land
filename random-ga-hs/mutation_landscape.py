@@ -1,79 +1,79 @@
-# import pandas as pd
-# import random
-# import matplotlib.pylab as plt
+import pandas as pd
+import random
+import matplotlib.pylab as plt
 
-# df = pd.read_csv("lookup_tables/svm_feature.csv")
-# df['features'] = df['features'].astype(str).apply(lambda x: x.zfill(11))
-# feature_loss_dict = dict(zip(df['features'], df['loss']))
+df = pd.read_csv("lookup_tables/svm_feature.csv")
+df['features'] = df['features'].astype(str).apply(lambda x: x.zfill(11))
+feature_loss_dict = dict(zip(df['features'], df['loss']))
 
-# def flip_bit(s, idx):
-#     flipped = list(s)
-#     flipped[idx] = '1' if s[idx] == '0' else '0'
-#     return ''.join(flipped)
+def flip_bit(s, idx):
+    flipped = list(s)
+    flipped[idx] = '1' if s[idx] == '0' else '0'
+    return ''.join(flipped)
 
-# all_neighbors_losses = []  
-# curr_loss = []
-# original = ''.join(random.choice('01') for _ in range(11))
-# curr_loss.append(feature_loss_dict.get(original,None))
-# for _ in range(50):
-#     neighbor_losses = []
-#     mutated_list = []
-#     for i in range(11):
-#         mutated = flip_bit(original, i)
-#         mutated_list.append(mutated)
-#         loss = feature_loss_dict.get(mutated, None)  
-#         neighbor_losses.append(loss)
+all_neighbors_losses = []  
+curr_loss = []
+original = ''.join(random.choice('01') for _ in range(11))
+curr_loss.append(feature_loss_dict.get(original,None))
+for _ in range(50):
+    neighbor_losses = []
+    mutated_list = []
+    for i in range(11):
+        mutated = flip_bit(original, i)
+        mutated_list.append(mutated)
+        loss = feature_loss_dict.get(mutated, None)  
+        neighbor_losses.append(loss)
     
-#     all_neighbors_losses.append(neighbor_losses)
-#     original = random.choice(mutated_list)
-#     curr_loss.append(feature_loss_dict.get(original,None))
+    all_neighbors_losses.append(neighbor_losses)
+    original = random.choice(mutated_list)
+    curr_loss.append(feature_loss_dict.get(original,None))
 
 
-# plt.figure(figsize=(14, 6))
+plt.figure(figsize=(14, 6))
 
-# x = []
-# y = []
-# colors = []
+x = []
+y = []
+colors = []
 
-# red_x = []
-# red_y = []
+red_x = []
+red_y = []
 
-# for i in range(len(all_neighbors_losses)):
-#     # Current loss (red dot)
-#     curr_x = i * 2
-#     curr_y = curr_loss[i]
-#     x.append(curr_x)
-#     y.append(curr_y)
-#     colors.append('red')
+for i in range(len(all_neighbors_losses)):
+    # Current loss (red dot)
+    curr_x = i * 2
+    curr_y = curr_loss[i]
+    x.append(curr_x)
+    y.append(curr_y)
+    colors.append('red')
 
-#     red_x.append(curr_x)
-#     red_y.append(curr_y)
+    red_x.append(curr_x)
+    red_y.append(curr_y)
 
-#     # Neighbor losses (blue dots)
-#     for loss in all_neighbors_losses[i]:
-#         x.append(i * 2 + 1)
-#         y.append(loss)
-#         colors.append('blue')
+    # Neighbor losses (blue dots)
+    for loss in all_neighbors_losses[i]:
+        x.append(i * 2 + 1)
+        y.append(loss)
+        colors.append('blue')
 
-# # Append last red dot
-# last_x = len(all_neighbors_losses) * 2
-# last_y = curr_loss[-1]
-# x.append(last_x)
-# y.append(last_y)
-# colors.append('red')
+# Append last red dot
+last_x = len(all_neighbors_losses) * 2
+last_y = curr_loss[-1]
+x.append(last_x)
+y.append(last_y)
+colors.append('red')
 
-# red_x.append(last_x)
-# red_y.append(last_y)
+red_x.append(last_x)
+red_y.append(last_y)
 
-# # Plot everything
-# plt.scatter(x, y, c=colors, alpha=0.7)
-# plt.plot(red_x, red_y, color='red', linestyle='-', linewidth=2, label='Current Loss Path')
-# plt.xlabel("Mutation Step (alternating current and neighbors)")
-# plt.ylabel("Loss")
-# plt.title("Traversal of Mutation Operator Over Energy Landscape")
-# plt.grid(True)
-# plt.legend()
-# plt.show()
+# Plot everything
+plt.scatter(x, y, c=colors, alpha=0.7)
+plt.plot(red_x, red_y, color='red', linestyle='-', linewidth=2, label='Current Loss Path')
+plt.xlabel("Mutation Step (alternating current and neighbors)")
+plt.ylabel("Loss")
+plt.title("Traversal of Mutation Operator Over Energy Landscape")
+plt.grid(True)
+plt.legend()
+plt.show()
 
 
 import pandas as pd
