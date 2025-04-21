@@ -5,13 +5,12 @@ run_time: 180
 log_frequency: 100
 
 # File
-file_name: ../lookup_tables/10-hepatitis.csv
-ind: ind
-fitness_name: err
+file_name: ../lookup_tables/svm_feature.csv
+ind: features
+fitness_name: loss
 mimizie_fitness_name: True
 
 # Hyperparameters
-population_size: 150
-n_generations: 30000
+population_size: 300
+n_generations: 40
 tournament_size: 3
-

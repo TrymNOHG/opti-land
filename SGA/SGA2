@@ -1,0 +1,214 @@
+using CSV
+using DataFrames
+using MLJ
+using Plots
+
+# Funzione di caricamento della lookup table
+function load_lookup_table(file_path::String)
+    table = CSV.File(file_path, header=1)
+    lookup_table = Dict{String, Float64}()  # Assicurati che la chiave sia di tipo String
+
+    for row in table
+        features = string(row[1])  # Assicurati che la chiave sia una String
+        loss = row[2]  # La colonna del loss
+        lookup_table[features] = loss
+    end
+
+    return lookup_table
+end
+
+# Funzione di unpacking del dataset (rinominata in my_unpack per evitare conflitti con MLJ)
+function my_unpack(data::DataFrame, condition)
+    y = data[!, 1]  # Prima colonna come target
+    X = data[:, 2:end]  # Le altre colonne come features
+    return y, X
+end
+
+# Funzione di inizializzazione della popolazione
+function initialize_population(pop_size::Int, num_genes::Int)
+    population = rand(Bool, pop_size, num_genes)  # pop_size individui, ognuno con num_genes (11 bit)
+    return population
+end
+
+# Funzione per calcolare la fitness della popolazione
+function get_population_fitness(model, X, y, population; lookup_table)
+    fitness = Float64[]
+    for individual in eachrow(population)
+        feature_str = join(map(x -> x ? "1" : "0", individual))
+        if haskey(lookup_table, feature_str)
+            push!(fitness, lookup_table[feature_str])
+        else
+            push!(fitness, 9999.0)  # Non trovato nella lookup table
+        end
+    end
+    return fitness
+end
+
+# Funzione di selezione del torneo
+function tournament_selection(fitness::Vector{Float64}, num_parents::Int64, tournament_size::Int64)
+    selected_parents = Int64[]
+    for _ in 1:num_parents
+        tournament = randperm(length(fitness))[1:tournament_size]
+        winner = tournament[argmin(fitness[tournament])]
+        push!(selected_parents, winner)
+    end
+    return selected_parents
+end
+
+# Funzione di crossover a 2 punti
+function two_point_crossover(population::Matrix{Bool})
+    num_individuals, num_genes = size(population)
+    offspring = Matrix{Bool}(undef, num_individuals, num_genes)
+    offspring .= population
+    shuffle_idx = shuffle(1:num_individuals)
+
+    for i in 1:2:(num_individuals-1)
+        parent1, parent2 = shuffle_idx[i], shuffle_idx[i+1]
+        point1, point2 = sort(rand(1:num_genes, 2))
+        offspring[parent1, point1:point2], offspring[parent2, point1:point2] =
+            population[parent2, point1:point2], population[parent1, point1:point2]
+    end
+    return offspring
+end
+
+# Funzione di mutazione (limita il numero di geni mutati)
+function mutation_max_n_genes!(curr_pop::Matrix{Bool}, mutation_probability::Float64, n::Int64)
+    num_rows, num_cols = size(curr_pop)
+    for i in 1:num_rows
+        gene_to_mutate = randperm(num_cols)[1:n]
+        for j in eachindex(gene_to_mutate)
+            if rand() < mutation_probability
+                curr_pop[i, gene_to_mutate[j]] = !curr_pop[i, gene_to_mutate[j]]
+            end
+        end
+    end
+end
+
+# Funzione di elitismo
+function elitism(fitness::Vector{Float64}, num_parents::Int64)
+    best_indices = sortperm(fitness, rev=false)[1:num_parents]
+    return best_indices
+end
+
+# Funzione per visualizzare l'evoluzione della fitness
+function plot_fitness_evolution(mean_fitness::Vector{Float64}, max_fitness::Vector{Float64}, min_fitness::Vector{Float64})
+    p = plot(1:length(mean_fitness), mean_fitness, label="Mean", lw=2, color=:blue, linestyle=:solid)
+    plot!(p, 1:length(max_fitness), max_fitness, label="Maximum", lw=2, color=:green, linestyle=:solid)
+    plot!(p, 1:length(min_fitness), min_fitness, label="Minimum", lw=2, color=:red, linestyle=:solid)
+    xlabel!(p, "Iteration")
+    ylabel!(p, "Fitness")
+    title!(p, "Fitness Evolution")
+    display(p)
+end
+
+# Funzione per visualizzare l'evoluzione della distanza di Hamming
+function plot_hamming_distance(distance::Vector{Float64})
+    p = plot(1:length(distance), distance, label="Distance", lw=2, color=:black, linestyle=:solid)
+    xlabel!(p, "Iteration")
+    ylabel!(p, "Distance")
+    title!(p, "Distance Evolution")
+    display(p)
+end
+
+# Caricamento dei dati
+data = CSV.read("C:/Users/giovy/Desktop/scopiazziamo/copia3/dataset.txt", DataFrame; header=0)
+y, X = my_unpack(data, ==(:Column102))  # Utilizza la funzione my_unpack
+lookup_table = load_lookup_table("C:/Users/giovy/Desktop/scopiazziamo/log_reg_feature.csv")
+
+# Parametri di evoluzione
+myRNG = 123
+N_POP = 100
+N_ITEMS = 11  # Ora 11 bit per individuo
+MAX_RMSE = 0.442
+PROB_MUTATION = 0.8
+GENES_MUTATED = 4
+MAX_ITER = 200
+
+# Inizializzazione variabili globali
+global mean_fitness = Float64[]
+global max_fitness = Float64[]
+global min_fitness = Float64[]
+global distance = Float64[]
+global curr_pop = initialize_population(N_POP, N_ITEMS)  # Assicurati che ritorni una matrice di tipo Matrix{Bool}
+
+global iter = 0
+global best_features_selection = []
+
+# Caricamento del modello
+LinearRegressor = @load LinearRegressor pkg=MLJLinearModels verbosity=0
+model = LinearRegressor()
+global best_rmse = Inf
+
+# Ciclo evolutivo
+while best_rmse ≥ MAX_RMSE && iter < MAX_ITER
+    global iter += 1
+    global curr_pop
+    fitness = get_population_fitness(model, X, y, curr_pop; lookup_table=lookup_table)
+
+    global best_rmse = minimum(fitness)
+    println("Iteration n' $iter - Best RMSE: $best_rmse")
+
+    # Calcola solo tra individui validi
+    valid_fitness_indices = findall(f -> f < 9999.0, fitness)
+
+    if !isempty(valid_fitness_indices)
+        best_idx = valid_fitness_indices[argmin(fitness[valid_fitness_indices])]
+        global best_rmse = fitness[best_idx]
+        global best_features_selection = curr_pop[best_idx, :]
+    else
+        println("⚠️ Nessun individuo valido nella generazione $iter")
+    end
+
+    # Se ha trovato un individuo valido con RMSE sotto la soglia, ferma il ciclo
+    if best_rmse < MAX_RMSE
+        break
+    end
+
+    # Selezione dei genitori
+    crossovering_parents = tournament_selection(fitness, Int64(round(N_POP / 10 * 8)), 10)
+    selected_parents = curr_pop[crossovering_parents, :]  # Assicurati che sia una matrice
+
+    # Conversione in Matrix{Bool}
+    selected_parents = Matrix{Bool}(selected_parents)
+
+    # Esegui crossover
+    offspring = two_point_crossover(selected_parents)
+    offspring = Matrix{Bool}(offspring)
+
+    # Concatenazione della popolazione
+    curr_pop = vcat(curr_pop, offspring)
+
+    # Mutazione
+    curr_pop = Matrix{Bool}(curr_pop)
+    mutation_max_n_genes!(curr_pop, PROB_MUTATION, GENES_MUTATED)
+
+    # Selezione elitista
+    fitness = get_population_fitness(model, X, y, curr_pop; lookup_table=lookup_table)
+    best_candidates_indices = elitism(fitness, N_POP)
+    curr_pop = curr_pop[best_candidates_indices, :]
+
+    push!(mean_fitness, mean(fitness))
+    push!(max_fitness, maximum(fitness))
+    push!(min_fitness, minimum(fitness))
+
+    # Calcola la distanza di Hamming media
+    push!(distance, mean_hamming_distance(Matrix(curr_pop)))
+end
+
+# Output finale: stampa solo le 5 migliori soluzioni
+final_fitness = get_population_fitness(model, X, y, curr_pop; lookup_table=lookup_table)
+sorted_indices = sortperm(final_fitness)[1:5]  # Seleziona le 5 migliori soluzioni
+
+println("Le 5 migliori soluzioni finali:")
+for i in sorted_indices
+    individual = curr_pop[i, :]
+    rmse = final_fitness[i]
+    bitstring = join(map(x -> x ? "1" : "0", individual))  # Crea un bitstring per l'individuo
+    println(" - RMSE: ", round(rmse, digits=6), " | Individuale: ", bitstring)
+end
+
+# Visualizza l'evoluzione della fitness
+plot_fitness_evolution(mean_fitness, max_fitness, min_fitness)
+
+# Visualizza l'evoluzione della distanza di Hamming
+plot_hamming_distance(distance)

@@ -1,38 +1,49 @@
 use super::individual::Individual;
 
-pub fn sorting(popuation: &mut Vec<Individual>) {
+pub fn fast_non_dominated_sort(population: &mut Vec<Individual>) {
+    let len = population.len();
     let mut front1 = Vec::new();
 
-    for (pi, p) in popuation.iter_mut().enumerate() {
-        p.dominating_idx = Vec::new();
-        p.n = 0;
-        for (qi, q) in popuation.iter().enumerate() {
-            if dominates(p, q) {
-                p.dominating_idx.push(qi);
-            } else if dominates(q, p) {
-                p.n += 1;
+    // First calculate domination relationships
+    for p_i in 0..len {
+        population[p_i].dominating_idx.clear();
+        population[p_i].n = 0;
+
+        for q_i in 0..len {
+            let p = &population[p_i];
+            let q = &population[q_i];
+
+            if dominates(&p, &q) {
+                population[p_i].dominating_idx.push(q_i);
+            } else if dominates(&q, &p) {
+                population[p_i].n += 1;
             }
         }
-        if p.n == 0 {
-            // Set rank of p to 1
-            front1.push(pi);
+
+        if population[p_i].n == 0 {
+            front1.push(p_i);
+            population[p_i].rank = 1;
         }
     }
 
+    // Second assign fronts
     let mut i = 1;
     let mut curr_front = front1;
+
     while !curr_front.is_empty() {
-        let mut next_front: Vec<usize> = Vec::new();
-        for pi in curr_front {
-            let p = &popuation[pi];
-            for &q_idx in &p.dominating_idx {
-                let q = &mut popuation[q_idx];
-                q.n -= 1;
-                if q.n == 0 {
-                    next_front.push(q_idx);
+        let mut next_front = Vec::new();
+
+        for &p_i in &curr_front {
+            let s = population[p_i].dominating_idx.clone();
+            for &q_i in &s {
+                population[q_i].n -= 1;
+                if population[q_i].n == 0 {
+                    population[q_i].rank = i + 1;
+                    next_front.push(q_i);
                 }
             }
         }
+
         i += 1;
         curr_front = next_front;
     }
