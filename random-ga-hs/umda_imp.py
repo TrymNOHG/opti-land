@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # UMDA for binary feature selection minimizing loss via a lookup dict
 
@@ -25,7 +26,8 @@ def umda(feature_loss_dict,
       best_loss: its associated loss
       history: list of (mean_loss, best_loss) per generation
     """
-    rng = np.random.default_rng(seed)
+    # rng = np.random.default_rng(seed)
+    rng = np.random.default_rng()
 
     # Initialize probability vector to 0.5
     p = np.full(num_bits, 0.5)
@@ -81,9 +83,22 @@ if __name__ == "__main__":
     best_gene, best_loss, hist = umda(
         feature_loss_dict=feature_loss_dict,
         num_bits=11,
-        pop_size=200,
-        select_size=40,
-        generations=100,
-        seed=42
+        pop_size=30,
+        select_size=5,
+        generations=10,
+        seed=123
     )
     print(f"\n==> Best gene: {best_gene} with loss {best_loss:.4f}")
+
+    # Plotting best_loss and mean_loss over generations
+    mean_losses, best_losses = zip(*hist)
+    plt.figure(figsize=(10, 6))
+    plt.plot(mean_losses, label='Mean Loss', linestyle='--', marker='o')
+    plt.plot(best_losses, label='Best Loss', linestyle='-', marker='x')
+    plt.xlabel('Generation')
+    plt.ylabel('Loss')
+    plt.title('UMDA: Mean and Best Loss Over Generations')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
