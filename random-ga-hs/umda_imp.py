@@ -3,94 +3,101 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # UMDA for binary feature selection minimizing loss via a lookup dict
-
 def umda(feature_loss_dict,
          num_bits=11,
          pop_size=100,
          select_size=20,
          generations=50,
+         min_loss_possible=None,
          seed=None):
     """
-    Run a Univariate Marginal Distribution Algorithm (UMDA).
+    Run a Univariate Marginal Distribution Algorithm (UMDA), tracking unique lookups.
+    Terminates early if best_loss reaches min_loss_possible.
 
     Args:
       feature_loss_dict: dict mapping bit-string gene -> fitness (loss) to minimize
       num_bits: length of each gene (11 features)
       pop_size: number of individuals per generation
       select_size: how many best to select each generation
-      generations: number of iterations
+      generations: max number of iterations
+      min_loss_possible: known lowest possible loss (early stopping target)
       seed: random seed for reproducibility
 
     Returns:
       best_gene: bit-string of the best individual found
       best_loss: its associated loss
       history: list of (mean_loss, best_loss) per generation
+      unique_accesses: total unique lookups into feature_loss_dict
     """
-    # rng = np.random.default_rng(seed)
-    rng = np.random.default_rng()
-
-    # Initialize probability vector to 0.5
+    rng = np.random.default_rng(seed)
     p = np.full(num_bits, 0.5)
 
     history = []
     best_gene = None
     best_loss = np.inf
 
-    for gen in range(1, generations + 1):
-        # Sampling: generate pop_size individuals
-        # Each bit is 1 with probability p[i]
-        population = rng.random((pop_size, num_bits)) < p
-        # Convert to string keys and evaluate
-        genes = [''.join(pop.astype(int).astype(str)) for pop in population]
-        losses = np.array([feature_loss_dict.get(g, np.inf) for g in genes])
+    cache = {}
+    unique_accesses = 0
 
-        # Identify best in this generation
+    for gen in range(1, generations + 1):
+        population = rng.random((pop_size, num_bits)) < p
+        genes = [''.join(pop.astype(int).astype(str)) for pop in population]
+        losses = []
+
+        for g in genes:
+            if g in cache:
+                loss = cache[g]
+            else:
+                loss = feature_loss_dict.get(g, np.inf)
+                cache[g] = loss
+                unique_accesses += 1
+            losses.append(loss)
+        losses = np.array(losses)
+
         gen_best_idx = np.argmin(losses)
         gen_best_gene = genes[gen_best_idx]
         gen_best_loss = losses[gen_best_idx]
 
-        # Update global best
         if gen_best_loss < best_loss:
             best_loss = gen_best_loss
             best_gene = gen_best_gene
 
-        # Record history
         history.append((losses.mean(), gen_best_loss))
 
-        # Selection: choose select_size lowest-loss individuals
+        print(f"Gen {gen:3d}: mean_loss={history[-1][0]:.4f}, best_loss={history[-1][1]:.4f}, unique_accesses={unique_accesses}")
+
+        if min_loss_possible is not None and best_loss <= min_loss_possible:
+            print(f"Early stopping: best_loss reached min_loss_possible ({min_loss_possible})")
+            break
+
         sel_idx = np.argsort(losses)[:select_size]
         selected = population[sel_idx]
-
-        # Update probabilities: average of selected bits
         p = selected.mean(axis=0)
-
-        # (Optional) enforce margins to avoid p==0 or 1
-        eps = 1.0 / (pop_size)
+        eps = 1.0 / pop_size
         p = np.clip(p, eps, 1 - eps)
 
-        print(f"Gen {gen:3d}: mean_loss={history[-1][0]:.4f}, best_loss={history[-1][1]:.4f}, p[:5]={p[:5]}...")
-
-    return best_gene, best_loss, history
+    return best_gene, best_loss, history, unique_accesses
 
 
 if __name__ == "__main__":
-    # Example usage — assume feature_loss_dict already defined elsewhere
-    # feature_loss_dict = { '00000000001': 0.5101, ... }
     df = pd.read_csv("lookup_tables/svm_feature.csv")
-    df['features'] = df['features'].astype(str).apply(lambda x: x.zfill(11))
+    df['features'] = df['features'].astype(str).str.zfill(11)
     feature_loss_dict = dict(zip(df['features'], df['loss']))
+    min_loss_possible = min(feature_loss_dict.values())
 
-    best_gene, best_loss, hist = umda(
+    best_gene, best_loss, hist, unique_lookups = umda(
         feature_loss_dict=feature_loss_dict,
         num_bits=11,
-        pop_size=30,
+        pop_size=20,
         select_size=5,
-        generations=10,
+        generations=100,
+        min_loss_possible=min_loss_possible,
         seed=123
     )
-    print(f"\n==> Best gene: {best_gene} with loss {best_loss:.4f}")
 
-    # Plotting best_loss and mean_loss over generations
+    print(f"\n==> Best gene: {best_gene} with loss {best_loss:.4f}")
+    print(f"Total unique feature_loss_dict accesses: {unique_lookups}")
+
     mean_losses, best_losses = zip(*hist)
     plt.figure(figsize=(10, 6))
     plt.plot(mean_losses, label='Mean Loss', linestyle='--', marker='o')
