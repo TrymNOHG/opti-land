@@ -18,6 +18,12 @@ pub fn start(config: &Config) {
     crowding_distance(&mut population);
     fast_non_dominated_sort(&mut population);
 
+    for individual in &population {
+        println!(
+            "Gene: {}, n features: {}",
+            individual.gene, individual.fitness_length
+        );
+    }
     let mut generation = 1;
 
     for _ in 0..config.n_generations {
@@ -33,6 +39,7 @@ pub fn start(config: &Config) {
         fast_non_dominated_sort(&mut population);
         crowding_distance(&mut population);
         destroy(&mut population);
+        /*
         println!("{}", population[0].fitness_ml_metric);
         let mut n_individuals = 0;
         for individual in &population {
@@ -48,8 +55,11 @@ pub fn start(config: &Config) {
                 individual.gene
             );
         }
-        println!("Number of individuals in first front: {}", n_individuals);
+        println!("Number of individuals in first front: {}", n_individuals);*/
         generation += 1;
+        if generation % config.log_frequency == 0 {
+            println!("Generation: {}", generation);
+        }
     }
-    let _ = save_fitness(population);
+    let _ = save_fitness(population, &config);
 }

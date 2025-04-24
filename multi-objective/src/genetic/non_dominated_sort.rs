@@ -50,6 +50,10 @@ pub fn fast_non_dominated_sort(population: &mut Vec<Individual>) {
 }
 
 fn dominates(individual1: &Individual, individual2: &Individual) -> bool {
-    individual1.fitness_length < individual2.fitness_length
-        && individual1.fitness_ml_metric < individual2.fitness_ml_metric
+    (individual1.fitness_length < individual2.fitness_length
+        && individual1.fitness_ml_metric < individual2.fitness_ml_metric)
+        || (individual1.fitness_length <= individual2.fitness_length
+            && individual1.fitness_ml_metric < individual2.fitness_ml_metric)
+        || (individual1.fitness_length < individual2.fitness_length
+            && individual1.fitness_ml_metric <= individual2.fitness_ml_metric)
 }
