@@ -5,7 +5,7 @@ run_time: 180
 log_frequency: 100
 
 # File
-file_name: ../lookup_tables/ensemble_feature.csv
+file_name: ../lookup_tables/log_reg_feature.csv
 ind: features
 fitness_name: loss
 minimize_fitness_name: True
