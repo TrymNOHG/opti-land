@@ -27,7 +27,7 @@ impl Individual {
     pub fn random_new(n_bits: usize) -> Self {
         let mut rng = rand::rng();
         Individual {
-            gene: rng.random_range(0..(2 << n_bits - 1)),
+            gene: rng.random_range(1..(2 << n_bits - 1)),
             fitness_length: 0,
             fitness_ml_metric: 0.0,
             dominating_idx: Vec::new(),

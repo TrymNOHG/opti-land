@@ -5,12 +5,16 @@ run_time: 180
 log_frequency: 100
 
 # File
-file_name: ../lookup_tables/svm_feature.csv
+file_name: ../lookup_tables/ensemble_feature.csv
+#file_name: ../lookup_tables/log_reg_feature.csv
+#file_name: ../lookup_tables/svm_feature.csv
+
 ind: features
 fitness_name: loss
 mimizie_fitness_name: True
 
 # Hyperparameters
 population_size: 300
-n_generations: 40
+n_generations: 2
+
 tournament_size: 3
