@@ -1,0 +1,16 @@
+# Max run time in seconds. -1 for no constraint
+run_time: 180
+
+# Logging
+log_frequency: 100
+
+# File
+file_name: ../lookup_tables/svm_feature.csv
+ind: features
+fitness_name: loss
+minimize_fitness_name: True
+
+# Hyperparameters
+population_size: 300
+n_generations: 40
+tournament_size: 3
