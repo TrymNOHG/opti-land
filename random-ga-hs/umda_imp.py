@@ -80,7 +80,7 @@ def umda(feature_loss_dict,
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("lookup_tables/svm_feature.csv")
+    df = pd.read_csv("lookup_tables/ensemble_feature.csv")
     df['features'] = df['features'].astype(str).str.zfill(11)
     feature_loss_dict = dict(zip(df['features'], df['loss']))
     min_loss_possible = min(feature_loss_dict.values())
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     print(f"\n==> Best gene: {best_gene} with loss {best_loss:.4f}")
     print(f"Total unique feature_loss_dict accesses: {unique_lookups}")
-
+    print(f"Min possible loss: {min_loss_possible}")
     mean_losses, best_losses = zip(*hist)
     plt.figure(figsize=(10, 6))
     plt.plot(mean_losses, label='Mean Loss', linestyle='--', marker='o')
