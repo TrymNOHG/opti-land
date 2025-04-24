@@ -20,5 +20,5 @@ best, history = run_sim(conf, lookup_table)
 
 output_file_name = replace(conf.file_name, ".csv"=>"")
 output_file_name = string(split(output_file_name, "/")[end])
-println(output_file_name)
+
 plot_history(history, output_file_name)

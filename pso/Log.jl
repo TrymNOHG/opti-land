@@ -10,7 +10,6 @@ module Log
     end
 
     function plot_history(history::History, file_name::String)
-        # Plot avg swarm loss first.
         num_gen = length(history.avg_swarm_loss)
         x_val = range(0, num_gen, length=num_gen)
         
@@ -18,11 +17,12 @@ module Log
         xlabel!(i, "Generation")
         ylabel!(i, "Loss")
         savefig(i, "./log/"* file_name * "_average_swarm_loss.png") 
-        println(history.best_global_loss)
+
         p = plot(x_val, history.best_global_loss, title="Best Global Swarm Loss", label="Global Swarm Loss") # Add title on axis and diagram...
         xlabel!(p, "Generation")
         ylabel!(p, "Loss")
         plot!(i, x_val, history.best_global_loss, title="Overview of Swarm Loss Progression", label="Global Swarm Loss") # Add title on axis and diagram...
+
         savefig(p, "./log/" * file_name * "_best_swarm_loss.png") 
         savefig(i, "./log/" * file_name * "_combined_loss.png") 
     end
