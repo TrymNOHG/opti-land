@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 # UMDA function
 def umda(feature_loss_dict,
-         num_bits=11,
+         num_bits=13,
          pop_size=100,
          select_size=20,
          generations=50,
@@ -60,7 +60,7 @@ def umda(feature_loss_dict,
 
 if __name__ == "__main__":
     # Load lookup table
-    df = pd.read_csv("lookup_tables/ensemble_feature.csv")
+    df = pd.read_csv("lookup_tables/task1_feature.csv")
     df['features'] = df['features'].astype(str).str.zfill(11)
     feature_loss_dict = dict(zip(df['features'], df['loss']))
     min_loss_possible = min(feature_loss_dict.values())

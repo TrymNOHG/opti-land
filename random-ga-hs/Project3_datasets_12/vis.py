@@ -1,7 +1,7 @@
 import h5py
 import pandas as pd
 
-tas1_mat_loc = "5-heart-c_rf_mat.h5"
+tas1_mat_loc = "8-zoo_rf_mat.h5"
 
 # Load the file
 with h5py.File(tas1_mat_loc, 'r') as f:
@@ -15,11 +15,11 @@ df = pd.DataFrame(data, columns=["accuracy", "time"])
 
 # Create the new DataFrame
 new_df = pd.DataFrame({
-    'features': [(bin(idx + 1)[2:]).zfill(13) for idx in df.index],
+    'features': [(bin(idx + 1)[2:]).zfill(16) for idx in df.index],
     'loss': 1 - df['accuracy']
 })
 
 # Save to CSV
-new_df.to_csv('task1_feature.csv', index=False)
+new_df.to_csv('task2_feature.csv', index=False)
 
-print("Saved as task1_feature.csv successfully!")
+print("Saved as task2_feature.csv successfully!")

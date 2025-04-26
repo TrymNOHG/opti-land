@@ -80,16 +80,16 @@ def umda(feature_loss_dict,
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("lookup_tables/ensemble_feature.csv")
+    df = pd.read_csv("lookup_tables/task2_feature.csv")
     df['features'] = df['features'].astype(str).str.zfill(11)
     feature_loss_dict = dict(zip(df['features'], df['loss']))
     min_loss_possible = min(feature_loss_dict.values())
-
+    pop_size_inp = 20
     best_gene, best_loss, hist, unique_lookups = umda(
         feature_loss_dict=feature_loss_dict,
-        num_bits=11,
-        pop_size=20,
-        select_size=5,
+        num_bits=16,
+        pop_size=pop_size_inp,
+        select_size=max(1, pop_size_inp // 6),
         generations=100,
         min_loss_possible=min_loss_possible,
         seed=123
