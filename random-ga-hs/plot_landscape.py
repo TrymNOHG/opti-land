@@ -2,7 +2,7 @@ import pandas as pd
 import random
 import matplotlib.pylab as plt
 
-df = pd.read_csv("lookup_tables/svm_feature.csv")
+df = pd.read_csv("lookup_tables/task1_feature.csv")
 df['features'] = df['features'].astype(str).apply(lambda x: x.zfill(11))
 feature_loss_dict = dict(zip(df['features'], df['loss']))
 
