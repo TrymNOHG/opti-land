@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, LinearSegmentedColormap
 import matplotlib.cm as cm
 from matplotlib.cm import ScalarMappable
 import math
@@ -46,30 +46,39 @@ def create_hypergraph(bin_rep_len=5):
     return new_format
 
 
-def plot_fitness_grid(fitness_grid, optima, show_optima=False, output_file=None):
+def plot_fitness_grid(fitness_grid, optima, show_optima=False, output_file=None, incomplete=False, max_min="min"):
     finite_matrix = np.copy(fitness_grid)
     finite_matrix[finite_matrix == math.inf] = np.nanmax(finite_matrix[np.isfinite(finite_matrix)]) * 1.1
 
     zero_mask = (finite_matrix == optima)
 
+    incomplete_mask = (finite_matrix == -1)
 
-    norm = Normalize(vmin=optima, vmax=np.nanmax(finite_matrix))
-    gray_cmap = cm.get_cmap('gray_r')  
-    
-    rgb_image = gray_cmap(norm(finite_matrix))[:, :, :3]
+    if max_min == "min":
+        norm = Normalize(vmin=optima, vmax=np.nanmax(finite_matrix))
+    else:
+        norm = Normalize(vmin=0.0, vmax=optima)
+
+    red_cmap = LinearSegmentedColormap.from_list('redscale', [(1,1,1), (1,0,0)])
+
+
+    rgb_image = red_cmap(norm(finite_matrix))[:, :, :3]
 
     if show_optima:
-        rgb_image[zero_mask] = [1, 0, 0]
+        rgb_image[zero_mask] = [0, 1, 0]
+
+    if incomplete:
+        rgb_image[incomplete_mask] = [0.3, 0.3, 0.3]
 
 
     _, ax = plt.subplots(figsize=(20, 8))
     ax.imshow(rgb_image)
     
-    sm = ScalarMappable(cmap=gray_cmap, norm=norm)
+    sm = ScalarMappable(cmap=red_cmap, norm=norm)
     sm.set_array([])  
     cbar = plt.colorbar(sm, ax=ax)
     cbar.ax.set_yticklabels([])  
-    cbar.set_label("Loss Value (brighter -> lower)", fontsize=12)
+    cbar.set_label("Fitness Value (Redder -> Higher)", fontsize=12)
 
     rows, cols = finite_matrix.shape
 
@@ -84,7 +93,7 @@ def plot_fitness_grid(fitness_grid, optima, show_optima=False, output_file=None)
     while (2 ** p) < max_dim:
         val = 2 ** p
         curr_val = val
-        linewidth = 0.5 + 2*p  
+        linewidth = 0.5 + p  
         while curr_val < max_dim:
             if curr_val < rows:
                 ax.axhline(curr_val - 0.5, color='black', linewidth=linewidth)
@@ -99,20 +108,24 @@ def plot_fitness_grid(fitness_grid, optima, show_optima=False, output_file=None)
     ax.tick_params(which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
     
 
-    plt.title("Hypergraph of Loss Landscape for Feature Selection")
+    plt.title("Hypergraph of Fitness Landscape for Feature Selection")
     if output_file is None:
         plt.show()
     else:
         plt.savefig(f"./images/{output_file}.png")
 
 
-def produce_hypergraph_plot(lookup_table, genotype_length, optima, show_optima=True, output=None):
+def produce_hypergraph_plot(lookup_table, genotype_length, optima, show_optima=True, output=None, incomplete=False, max_min="min"):
     hypergraph_layout = create_hypergraph(genotype_length)
     for row in hypergraph_layout:
         for j, val in enumerate(row):
-            row[j] = lookup_table[val]
+            try:
+                row[j] = lookup_table[val]
+            except:
+                if incomplete:
+                    row[j] = -1
     
-    plot_fitness_grid(hypergraph_layout, optima, show_optima, output)
+    plot_fitness_grid(hypergraph_layout, optima, show_optima, output, incomplete, max_min)
         
 
 
