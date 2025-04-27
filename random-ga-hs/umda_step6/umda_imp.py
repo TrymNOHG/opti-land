@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from get_ftiness import fitness_of_mask
+from get_ftiness import fitness_of_mask_t1, fitness_of_mask_t3, fitness_of_mask_t1
 
 # UMDA for binary feature selection minimizing loss via a lookup dict
 def umda(
@@ -50,7 +50,7 @@ def umda(
                 loss = cache[g]
             else:
                 # loss = feature_loss_dict.get(g, np.inf)
-                loss = fitness_of_mask(g)
+                loss = fitness_of_mask_t1(g)
                 cache[g] = loss
                 unique_accesses += 1
             losses.append(loss)
@@ -85,10 +85,10 @@ if __name__ == "__main__":
     # df = pd.read_csv("lookup_tables/task2_feature.csv")
     # df['features'] = df['features'].astype(str).str.zfill(11)
     # feature_loss_dict = dict(zip(df['features'], df['loss']))
-    min_loss_possible = 0.7773333333333333
+    min_loss_possible = 0
     pop_size_inp = 20
     best_gene, best_loss, hist, unique_lookups = umda(
-        num_bits=16,
+        num_bits=13,
         pop_size=pop_size_inp,
         select_size=max(1, pop_size_inp // 6),
         generations=10,
