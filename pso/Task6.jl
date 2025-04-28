@@ -7,8 +7,8 @@ using .ConfigLoader
 include("./Log.jl")
 using .Log
 
-include("./PSO.jl")
-using .PSO
+include("./PSO_6.jl")
+using .PSO6
 
 
 

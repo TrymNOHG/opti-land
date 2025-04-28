@@ -1,4 +1,4 @@
-module PSO
+module PSO6
 
 using ..ConfigModule, ..Log
 
